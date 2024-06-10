@@ -28,7 +28,9 @@ from file.models import File
 from file.serializers import FileSerializer
 from mlmodels.sqlinjection_model.sqlinjection_model import predict
 from utils.tools import check_user_counts
-
+from datetime import datetime
+from attacks_logs.models import Log
+from attacks_logs.serializers import LogSerializer
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
@@ -63,13 +65,45 @@ class RegisterView(APIView):
     def post(self, request):
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
+            sql_queries = predict_result["sqli_queries"]
+            mal_input = ""
+            for query in sql_queries:
+                    if sql_queries.index(query) == len(sql_queries) - 1:
+                        mal_input += query 
+                    else:
+                        mal_input += query + " |||| "
+            log_data = {
+                    "attack_type": "sqli",
+                    "file" : None,
+                    "user": "Anonymous user",
+                    "attack_timing": datetime.now(),
+                    "attack_input": mal_input
+                }
+            log = Log(
+                    attack_type=log_data["attack_type"],
+                    file=log_data["file"],
+                    user=log_data["user"],
+                    attack_timing=log_data["attack_timing"],
+                    attack_input=log_data["attack_input"],
+                                     )
+
+            log.save()
             return BaseResponse(
                 data=None,
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
                 message=predict_result["message"],
                 error=predict_result["sql_injection"],
             )
+        if User.objects.filter(email=request.data["email"]).exists():
+            return BaseResponse(
+                data=None,
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="This email is already registered",
+                error=True,
+            )
         serializer = UserSerializer(data=request.data)
+        # verification of existsing
+        
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
@@ -180,6 +214,29 @@ class LoginView(APIView):
     #    can register warnings here
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
+            sql_queries = predict_result["sqli_queries"]
+            mal_input = ""
+            for query in sql_queries:
+                    if sql_queries.index(query) == len(sql_queries) - 1:
+                        mal_input += query 
+                    else:
+                        mal_input += query + " |||| "
+            log_data = {
+                    "attack_type": "sqli",
+                    "file" : None,
+                    "user": "Anonymous user",
+                    "attack_timing": datetime.now(),
+                    "attack_input": mal_input
+                }
+            log = Log(
+                    attack_type=log_data["attack_type"],
+                    file=log_data["file"],
+                    user=log_data["user"],
+                    attack_timing=log_data["attack_timing"],
+                    attack_input=log_data["attack_input"],
+                                     )
+
+            log.save()
             return BaseResponse(
                 data=None,
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -276,6 +333,29 @@ class SendResetEmail(APIView):
     def post(self, request):
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
+            sql_queries = predict_result["sqli_queries"]
+            mal_input = ""
+            for query in sql_queries:
+                    if sql_queries.index(query) == len(sql_queries) - 1:
+                        mal_input += query 
+                    else:
+                        mal_input += query + " |||| "
+            log_data = {
+                    "attack_type": "sqli",
+                    "file" : None,
+                    "user": "Anonymous user",
+                    "attack_timing": datetime.now(),
+                    "attack_input": mal_input
+                }
+            log = Log(
+                    attack_type=log_data["attack_type"],
+                    file=log_data["file"],
+                    user=log_data["user"],
+                    attack_timing=log_data["attack_timing"],
+                    attack_input=log_data["attack_input"],
+                                     )
+
+            log.save()
             return BaseResponse(
                 data=None,
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -399,6 +479,29 @@ class ResetPasswordView(APIView):
     
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
+            sql_queries = predict_result["sqli_queries"]
+            mal_input = ""
+            for query in sql_queries:
+                    if sql_queries.index(query) == len(sql_queries) - 1:
+                        mal_input += query 
+                    else:
+                        mal_input += query + " |||| "
+            log_data = {
+                    "attack_type": "sqli",
+                    "file" : None,
+                    "user": "Anonymous user",
+                    "attack_timing": datetime.now(),
+                    "attack_input": mal_input
+                }
+            log = Log(
+                    attack_type=log_data["attack_type"],
+                    file=log_data["file"],
+                    user=log_data["user"],
+                    attack_timing=log_data["attack_timing"],
+                    attack_input=log_data["attack_input"],
+                                     )
+
+            log.save()
             return BaseResponse(
                 data=None,
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -487,6 +590,29 @@ class UpdatePasswordView(APIView):
         user = User.objects.filter(id=request.user.id).first()
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
+            sql_queries = predict_result["sqli_queries"]
+            mal_input = ""
+            for query in sql_queries:
+                    if sql_queries.index(query) == len(sql_queries) - 1:
+                        mal_input += query 
+                    else:
+                        mal_input += query + " |||| "
+            log_data = {
+                    "attack_type": "sqli",
+                    "file" : None,
+                    "user": f"user_{user.id}_{user.get_full_name()}",
+                    "attack_timing": datetime.now(),
+                    "attack_input": mal_input
+                }
+            log = Log(
+                    attack_type=log_data["attack_type"],
+                    file=log_data["file"],
+                    user=log_data["user"],
+                    attack_timing=log_data["attack_timing"],
+                    attack_input=log_data["attack_input"],
+                                     )
+
+            log.save()
             message = f"Sql Injection detected, "
             warning_message = check_user_counts(user)
             if warning_message == "banned":
@@ -582,6 +708,29 @@ class UpdateUserInfoView(APIView):
         
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
+            sql_queries = predict_result["sqli_queries"]
+            mal_input = ""
+            for query in sql_queries:
+                    if sql_queries.index(query) == len(sql_queries) - 1:
+                        mal_input += query 
+                    else:
+                        mal_input += query + " |||| "
+            log_data = {
+                    "attack_type": "sqli",
+                    "file" : None,
+                    "user": f"user_{user.id}_{user.get_full_name()}",
+                    "attack_timing": datetime.now(),
+                    "attack_input": mal_input
+                }
+            log = Log(
+                    attack_type=log_data["attack_type"],
+                    file=log_data["file"],
+                    user=log_data["user"],
+                    attack_timing=log_data["attack_timing"],
+                    attack_input=log_data["attack_input"],
+                                     )
+
+            log.save()
             message = "Sql Injection detected, "
             warning_message = check_user_counts(user)
             if warning_message == "banned":

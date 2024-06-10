@@ -97,30 +97,70 @@ def predict_single_query(query):
     }
 
 
+# def predict(self, request):
+#     print(request.data)
+#     predictions = {}
+#     for field, query in request.data.items():
+
+#         if query:
+#             prediction = predict_single_query(query)
+#             predictions[field] = prediction
+#             # print("**********")
+#             # print(field)
+#             # print(query)
+#             # print(prediction)
+#             # print("**********")
+#         else:
+#             predictions[field] = {"error": "No query provided for this field"}
+
+#     print(predictions)
+#     for field, value in predictions.items():
+#         if value["sql_injection"] == True:
+#             print("****************************************")
+#             print("SQL injection detected")
+#             print("----------------------------------------")
+#             print(predictions)
+#             print("****************************************")
+#             return {"sql_injection": True, "message": "SQL injection detected"}
+
+#     return {"sql_injection": False, "message": "Everthing seem fine"}
 def predict(self, request):
-    print(request.data)
+    # print(request.data)
+    sqli_queries = []
     predictions = {}
     for field, query in request.data.items():
 
         if query:
             prediction = predict_single_query(query)
             predictions[field] = prediction
-            # print("**********")
+
+            if prediction["sql_injection"] == True:
+                sqli_queries.append(query)
+
+            # print("********")
             # print(field)
             # print(query)
             # print(prediction)
-            # print("**********")
+            # print("********")
         else:
             predictions[field] = {"error": "No query provided for this field"}
 
-    print(predictions)
+    # print(sqli_queries)
     for field, value in predictions.items():
         if value["sql_injection"] == True:
-            print("****************************************")
-            print("SQL injection detected")
-            print("----------------------------------------")
-            print(predictions)
-            print("****************************************")
-            return {"sql_injection": True, "message": "SQL injection detected"}
+            # print("**************************************")
+            # print("SQL injection detected")
+            # print("----------------------------------------")
+            # print(predictions)
+            # print("**************************************")
+            return {
+                "sql_injection": True,
+                "message": "SQL injection detected",
+                "sqli_queries": sqli_queries,
+            }
 
-    return {"sql_injection": False, "message": "Everthing seem fine"}
+    return {
+        "sql_injection": False,
+        "message": "Everthing seem fine",
+        "sqli_queries": None,
+    }
