@@ -4,8 +4,7 @@ from utils.tools import (
     validate_file_type,
     check_user_counts
 )
-from attacks_logs.models import Log
-from attacks_logs.serializers import LogSerializer
+
 import numpy as np
 from .models import File
 from .serializers import FileSerializer
@@ -26,7 +25,7 @@ from django.conf import settings
 from jwt import decode
 
 from django.http import JsonResponse
-from datetime import datetime
+
 
 def convert_ndarray_to_list(data):
     if isinstance(data, np.ndarray):
@@ -225,24 +224,7 @@ class FileViewSet(ViewSet):
         file_bytes = uploaded_file.read()
         prediction = map_model_to_file(file_type, file_bytes)
         if prediction == 1:
-                log_data = {
-                    "attack_type": "file_upload",
-                    "file" : uploaded_file,
-                    "user": f"user_{user.id}_{user.get_full_name()}",
-                    "attack_timing": datetime.now(),
-                    "attack_input": "NO INPUT"
-                }
-                log = Log(
-                    attack_type=log_data["attack_type"],
-                    file=log_data["file"],
-                    user=log_data["user"],
-                    attack_timing=log_data["attack_timing"],
-                    attack_input=log_data["attack_input"],
-                                     )
-
-                log.save()
-
-                        
+                
                 message = f"the file which is {file_type} is dangerous, "
                 warning_message = check_user_counts(user)
                 if warning_message == "banned":
@@ -264,29 +246,6 @@ class FileViewSet(ViewSet):
         # sqli detection
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
-                sql_queries = predict_result["sqli_queries"]
-                mal_input = ""
-                for query in sql_queries:
-                    if sql_queries.index(query) == len(sql_queries) - 1:
-                        mal_input += query 
-                    else:
-                        mal_input += query + " |||| "
-                log_data = {
-                    "attack_type": "sqli",
-                    "file" : None,
-                    "user": f"user_{user.id}_{user.get_full_name()}",
-                    "attack_timing": datetime.now(),
-                    "attack_input": mal_input
-                }
-                log = Log(
-                    attack_type=log_data["attack_type"],
-                    file=log_data["file"],
-                    user=log_data["user"],
-                    attack_timing=log_data["attack_timing"],
-                    attack_input=log_data["attack_input"],
-                                     )
-
-                log.save()
                 message = "Sql Injection Detected, " 
                 warning_message = check_user_counts(user)
                 if warning_message == "banned":
@@ -511,29 +470,6 @@ class FileViewSet(ViewSet):
         user = User.objects.filter(id=request.user.id).first()
         predict_result = predict(self, request)
         if predict_result["sql_injection"] == True:
-            sql_queries = predict_result["sqli_queries"]
-            mal_input = ""
-            for query in sql_queries:
-                    if sql_queries.index(query) == len(sql_queries) - 1:
-                        mal_input += query 
-                    else:
-                        mal_input += query + " |||| "
-            log_data = {
-                    "attack_type": "sqli",
-                    "file" : None,
-                    "user": f"user_{user.id}_{user.get_full_name()}",
-                    "attack_timing": datetime.now(),
-                    "attack_input": mal_input
-                }
-            log = Log(
-                    attack_type=log_data["attack_type"],
-                    file=log_data["file"],
-                    user=log_data["user"],
-                    attack_timing=log_data["attack_timing"],
-                    attack_input=log_data["attack_input"],
-                                     )
-
-            log.save()
             message = "Sql Injection detected, "
             warning_message = check_user_counts(user)
             if warning_message == "banned":
