@@ -4,7 +4,6 @@
 echo "Applying database migrations..."
 python manage.py makemigrations filehive_auth
 python manage.py makemigrations file
-python manage.py makemigrations attacks_logs
 python manage.py makemigrations
 python manage.py migrate
 
