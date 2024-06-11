@@ -4,10 +4,10 @@ import io
 import numpy as np
 
 def extract_pdf_features(pdf_bytes):
-    # print(pdf_bytes)
-    print(pdf_bytes)
+    
+    
     pdf_stream = io.BytesIO(pdf_bytes)
-    # print(pdf_stream.readlines())
+    
     pdf_reader = PyPDF2.PdfReader(pdf_stream)
     features = {
         'pdfsize': 0,
@@ -76,19 +76,18 @@ def extract_pdf_features(pdf_bytes):
                 pattern = rb'\bstream\b' #+ rb'(?!endstream)'
             else:
                 pattern = re.escape(keyword)
-        # print(f"key: {feature}, value: {len(re.findall(pattern, pdf_bytes)) } , pattern: {pattern}")
+     
         features[feature] = len(re.findall(pattern, pdf_bytes)) 
         
     features['xref'] = features['xref'] - features['startxref']  
     features['obj'] = features['obj'] - features['endobj']  
 
-    # print(features)
     # Convert features dictionary to a NumPy array
     feature_values = list(features.values())
     feature_array = np.array(feature_values).reshape(1, -1)
     
     # return feature_arra
-    print(feature_array)
+   
     return feature_array
 
 
